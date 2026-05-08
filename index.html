@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>12ヶ月キャッシュフローシミュレーター</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #fafaf9;
+      color: #1a1a1a;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      color: #1a1a1a;
+    }
+    
+    .ctrl-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+    
+    .ctrl-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .ctrl-item label {
+      font-size: 12px;
+      color: #666;
+      font-weight: 500;
+    }
+    
+    .ctrl-item input[type=number] {
+      padding: 8px 12px;
+      font-size: 14px;
+      border: 1px solid #d4d4d4;
+      border-radius: 6px;
+      background: white;
+      color: #1a1a1a;
+      width: 100%;
+    }
+    
+    .ctrl-item input[type=number]:focus {
+      outline: none;
+      border-color: #378ADD;
+    }
+    
+    .section-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+      margin-bottom: 10px;
+    }
+    
+    .prebill-box {
+      background: #f5f5f4;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+    }
+    
+    .prebill-box > div:first-child {
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+      flex-basis: 100%;
+    }
+    
+    .prebill-box label {
+      font-size: 11px;
+      color: #666;
+      display: block;
+      margin-bottom: 4px;
+    }
+    
+    .prebill-box input {
+      padding: 6px 10px;
+      font-size: 13px;
+      border: 1px solid #d4d4d4;
+      border-radius: 6px;
+      background: white;
+      color: #1a1a1a;
+      width: 120px;
+      text-align: right;
+    }
+    
+    .jiba-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .jiba-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .jiba-cell label {
+      font-size: 11px;
+      color: #999;
+      text-align: center;
+    }
+    
+    .jiba-cell input {
+      padding: 6px;
+      font-size: 12px;
+      border: 1px solid #d4d4d4;
+      border-radius: 6px;
+      background: white;
+      color: #1a1a1a;
+      width: 100%;
+      text-align: right;
+    }
+    
+    .flow-box {
+      background: #f5f5f4;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .flow-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    
+    .flow-label {
+      font-size: 11px;
+      color: #666;
+      width: 60px;
+      flex-shrink: 0;
+    }
+    
+    .fcell {
+      flex: 1;
+      min-width: 40px;
+      max-width: 60px;
+      height: 40px;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 500;
+      border: 1px solid #e5e5e5;
+      color: #999;
+    }
+    
+    .fcell.billing {
+      background: #EAF3DE;
+      border-color: #639922;
+      color: #27500A;
+    }
+    
+    .fcell.payment {
+      background: #E6F1FB;
+      border-color: #378ADD;
+      color: #0C447C;
+    }
+    
+    .fcell.empty {
+      background: white;
+    }
+    
+    .fcell .fl {
+      font-size: 9px;
+    }
+    
+    .fcell .fv {
+      font-size: 10px;
+      font-weight: 500;
+    }
+    
+    .hint {
+      font-size: 11px;
+      color: #999;
+      margin-top: 10px;
+    }
+    
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+    
+    .metric {
+      background: #f5f5f4;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    
+    .metric-label {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+    
+    .metric-value {
+      font-size: 20px;
+      font-weight: 500;
+    }
+    
+    .pos { color: #0F6E56; }
+    .neg { color: #993C1D; }
+    .warn { color: #854F0B; }
+    
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 1rem;
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .legend span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .lb {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+    
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      margin-bottom: 1.5rem;
+    }
+    
+    .tbl-wrap {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid #e5e5e5;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    
+    th {
+      font-size: 11px;
+      font-weight: 500;
+      color: #666;
+      text-align: right;
+      padding: 10px;
+      border-bottom: 1px solid #e5e5e5;
+      background: #fafaf9;
+      white-space: nowrap;
+    }
+    
+    th:first-child {
+      text-align: left;
+    }
+    
+    td {
+      padding: 10px;
+      text-align: right;
+      border-bottom: 1px solid #f5f5f4;
+      white-space: nowrap;
+    }
+    
+    td:first-child {
+      text-align: left;
+      font-weight: 500;
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .alert-box {
+      background: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 13px;
+      color: #991B1B;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      
+      .container {
+        padding: 1rem;
+      }
+      
+      .jiba-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .fcell {
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>12ヶ月キャッシュフローシミュレーター</h1>
+
+    <div class="ctrl-grid">
+      <div class="ctrl-item">
+        <label>月初手元現金（円）</label>
+        <input type="number" id="initCash" value="300000" step="50000" oninput="runAll()">
+      </div>
+      <div class="ctrl-item">
+        <label>月次通常収入（円）</label>
+        <input type="number" id="monthlyIncome" value="2050000" step="50000" oninput="runAll()">
+      </div>
+      <div class="ctrl-item">
+        <label>月次支出（円）</label>
+        <input type="number" id="monthlyExpense" value="1914400" step="50000" oninput="runAll()">
+      </div>
+      <div class="ctrl-item">
+        <label>入金サイクル（請求の何ヶ月後）</label>
+        <input type="number" id="cycleDelay" value="2" min="1" max="4" step="1" oninput="runAll()">
+      </div>
+    </div>
+
+    <div class="prebill-box">
+      <div>5月入金の元となる過去請求</div>
+      <div>
+        <label>3月請求（円）</label>
+        <input type="number" id="prevMar" value="250000" step="10000" oninput="runAll()">
+      </div>
+      <div>
+        <label>4月請求（円）</label>
+        <input type="number" id="prevApr" value="250000" step="10000" oninput="runAll()">
+      </div>
+      <div style="font-size: 11px; color: #999;">※サイクル2ヶ月の場合、5月に3月・4月分がまとめて入金</div>
+    </div>
+
+    <div class="flow-box">
+      <div class="section-label">自賠責 月次請求額（5月〜翌4月）</div>
+      <div class="jiba-grid" id="jibaInputTop"></div>
+      <div class="jiba-grid" id="jibaInputBot"></div>
+
+      <div class="section-label" style="margin-top: 1rem;">入金フロー（請求→入金のサイクル確認）</div>
+      <div class="flow-row">
+        <div class="flow-label">請求月</div>
+        <div id="flowBilling" style="display:flex;gap:6px;flex-wrap:wrap;flex:1;"></div>
+      </div>
+      <div class="flow-row">
+        <div class="flow-label">入金月</div>
+        <div id="flowPayment" style="display:flex;gap:6px;flex-wrap:wrap;flex:1;"></div>
+      </div>
+      <div class="hint">
+        <span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;">
+          <span style="width:10px;height:10px;border-radius:2px;background:#EAF3DE;border:1px solid #639922;"></span>請求月（金額）
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:4px;">
+          <span style="width:10px;height:10px;border-radius:2px;background:#E6F1FB;border:1px solid #378ADD;"></span>入金月（まとめ入金額）
+        </span>
+      </div>
+    </div>
+
+    <div id="alertBox"></div>
+    <div class="metrics" id="metricsRow"></div>
+
+    <div class="legend">
+      <span><span class="lb" style="background:#185FA5;"></span>手元現金（月末）</span>
+      <span><span class="lb" style="background:#E6F1FB;border:1px solid #378ADD;"></span>自賠責入金あり</span>
+      <span><span class="lb" style="background:rgba(216,90,48,0.15);border:1px solid #D85A30;"></span>自賠責入金なし</span>
+    </div>
+    
+    <div class="chart-wrap">
+      <canvas id="cfChart"></canvas>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:60px;">月</th>
+            <th>期首残高</th>
+            <th>通常収入</th>
+            <th>自賠入金</th>
+            <th>収入計</th>
+            <th>支出計</th>
+            <th>収支差</th>
+            <th>期末残高</th>
+          </tr>
+        </thead>
+        <tbody id="cfBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script>
+    const LABELS = ['5月','6月','7月','8月','9月','10月','11月','12月','1月','2月','3月','4月'];
+    const N = 12;
+    const DEFAULT_BILLING = [430000,430000,430000,430000,430000,430000,430000,430000,430000,430000,250000,250000];
+    let cfChart = null;
+
+    function fmt(n){ return Math.round(n).toLocaleString('ja-JP'); }
+
+    function buildInputs(){
+      const topEl = document.getElementById('jibaInputTop');
+      const botEl = document.getElementById('jibaInputBot');
+      topEl.innerHTML = '';
+      botEl.innerHTML = '';
+      LABELS.forEach((lbl, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'jiba-cell';
+        cell.innerHTML = `<label>${lbl}</label><input type="number" id="jiba_${i}" value="${DEFAULT_BILLING[i]}" step="10000" oninput="runAll()">`;
+        (i < 6 ? topEl : botEl).appendChild(cell);
+      });
+    }
+
+    function getBilling(){
+      return LABELS.map((_,i) => parseFloat(document.getElementById('jiba_'+i).value)||0);
+    }
+
+    function computePayments(billing, delay, prevBilling){
+      const payments = Array(N).fill(0);
+      payments[0] = prevBilling.reduce((a,b)=>a+b,0);
+
+      let payIdx = delay;
+      let billingStart = 0;
+
+      while(payIdx < N){
+        let sum = 0;
+        for(let k = billingStart; k < billingStart + delay && k < N; k++){
+          sum += billing[k];
+        }
+        payments[payIdx] = Math.round(sum);
+        billingStart += delay;
+        payIdx += delay;
+      }
+
+      return payments;
+    }
+
+    function getPrevBilling(delay){
+      const mar = parseFloat(document.getElementById('prevMar').value)||0;
+      const apr = parseFloat(document.getElementById('prevApr').value)||0;
+
+      if(delay === 1) return [apr];
+      if(delay === 2) return [mar, apr];
+      if(delay === 3) return [0, mar, apr];
+      if(delay === 4) return [0, 0, mar, apr];
+      return [mar, apr];
+    }
+
+    function renderFlow(billing, payments){
+      const billingEl = document.getElementById('flowBilling');
+      const paymentEl = document.getElementById('flowPayment');
+      billingEl.innerHTML = '';
+      paymentEl.innerHTML = '';
+
+      LABELS.forEach((lbl, i) => {
+        const bc = document.createElement('div');
+        bc.className = 'fcell billing';
+        bc.innerHTML = `<span class="fl">${lbl}</span><span class="fv">${Math.round(billing[i]/10000)}万</span>`;
+        bc.title = `${lbl}請求 ${fmt(billing[i])}円`;
+        billingEl.appendChild(bc);
+
+        const pc = document.createElement('div');
+        if(payments[i] > 0){
+          pc.className = 'fcell payment';
+          pc.innerHTML = `<span class="fl">${lbl}</span><span class="fv">${Math.round(payments[i]/10000)}万</span>`;
+          pc.title = `${lbl}入金 ${fmt(payments[i])}円`;
+        } else {
+          pc.className = 'fcell empty';
+          pc.innerHTML = `<span class="fl">${lbl}</span><span class="fv">—</span>`;
+        }
+        paymentEl.appendChild(pc);
+      });
+    }
+
+    function runAll(){
+      const billing      = getBilling();
+      const delay        = Math.max(1, Math.min(4, parseInt(document.getElementById('cycleDelay').value)||2));
+      const prevBilling  = getPrevBilling(delay);
+      const payments     = computePayments(billing, delay, prevBilling);
+
+      renderFlow(billing, payments);
+
+      const initCash = parseFloat(document.getElementById('initCash').value)||0;
+      const income   = parseFloat(document.getElementById('monthlyIncome').value)||0;
+      const expense  = parseFloat(document.getElementById('monthlyExpense').value)||0;
+
+      let rows = [];
+      let cash = initCash;
+      let minCash = Infinity, minMonth = '', dangerCount = 0;
+
+      for(let i = 0; i < N; i++){
+        const opening  = Math.round(cash);
+        const jibaIn   = payments[i];
+        const totalIn  = Math.round(income + jibaIn);
+        const totalOut = Math.round(expense);
+        const diff     = totalIn - totalOut;
+        cash = opening + diff;
+        if(cash < minCash){ minCash = cash; minMonth = LABELS[i]; }
+        if(cash < 500000) dangerCount++;
+        rows.push({ label:LABELS[i], opening, income:Math.round(income), jibaIn, totalIn, totalOut, diff:Math.round(diff), closing:Math.round(cash) });
+      }
+
+      const alertBox = document.getElementById('alertBox');
+      alertBox.innerHTML = dangerCount > 0
+        ? `<div class="alert-box">⚠️ 残高50万円未満の月が <strong>${dangerCount}ヶ月</strong> あります。最低残高：<strong>${fmt(minCash)}円</strong>（${minMonth}）</div>`
+        : '';
+
+      const finalCash = rows[N-1].closing;
+      const avgDiff   = rows.reduce((s,r)=>s+r.diff,0)/N;
+      document.getElementById('metricsRow').innerHTML = `
+        <div class="metric"><div class="metric-label">12ヶ月後の手元現金</div><div class="metric-value ${finalCash>=0?'pos':'neg'}">${fmt(finalCash)}円</div></div>
+        <div class="metric"><div class="metric-label">月平均収支差</div><div class="metric-value ${avgDiff>=0?'pos':'neg'}">${avgDiff>=0?'+':''}${fmt(avgDiff)}円</div></div>
+        <div class="metric"><div class="metric-label">最低残高</div><div class="metric-value ${minCash<500000?'warn':'pos'}">${fmt(minCash)}円</div></div>
+        <div class="metric"><div class="metric-label">要注意月数</div><div class="metric-value ${dangerCount>0?'warn':'pos'}">${dangerCount}ヶ月</div></div>
+      `;
+
+      document.getElementById('cfBody').innerHTML = rows.map(r => `
+        <tr style="background:${r.jibaIn>0?'rgba(55,138,221,0.05)':''};">
+          <td>${r.label}</td>
+          <td>${fmt(r.opening)}</td>
+          <td>${fmt(r.income)}</td>
+          <td style="color:${r.jibaIn>0?'#185FA5':'#999'};">${r.jibaIn>0?fmt(r.jibaIn):'—'}</td>
+          <td>${fmt(r.totalIn)}</td>
+          <td style="color:#993C1D;">${fmt(r.totalOut)}</td>
+          <td style="color:${r.diff>=0?'#0F6E56':'#993C1D'};">${r.diff>=0?'+':''}${fmt(r.diff)}</td>
+          <td style="color:${r.closing<500000?'#993C1D':r.closing>1000000?'#0F6E56':'#1a1a1a'};font-weight:500;">${fmt(r.closing)}</td>
+        </tr>
+      `).join('');
+
+      const barColors  = rows.map(r => r.jibaIn>0?'rgba(55,138,221,0.2)':'rgba(216,90,48,0.12)');
+      const barBorders = rows.map(r => r.jibaIn>0?'#378ADD':'#D85A30');
+
+      if(cfChart) cfChart.destroy();
+      cfChart = new Chart(document.getElementById('cfChart'),{
+        type:'bar',
+        data:{
+          labels:LABELS,
+          datasets:[
+            {
+              type:'line',
+              label:'手元現金（月末）',
+              data:rows.map(r=>r.closing),
+              borderColor:'#185FA5',
+              backgroundColor:'rgba(55,138,221,0.06)',
+              borderWidth:2,
+              pointRadius:5,
+              pointBackgroundColor:rows.map(r=>r.closing<500000?'#993C1D':'#378ADD'),
+              pointBorderColor:rows.map(r=>r.closing<500000?'#993C1D':'#378ADD'),
+              fill:true,tension:0.35,yAxisID:'y',order:1
+            },
+            {
+              type:'bar',
+              label:'月次収入計',
+              data:rows.map(r=>r.totalIn),
+              backgroundColor:barColors,
+              borderColor:barBorders,
+              borderWidth:1,
+              yAxisID:'y2',order:2
+            }
+          ]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          interaction:{mode:'index',intersect:false},
+          plugins:{
+            legend:{display:false},
+            tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${Math.round(ctx.parsed.y).toLocaleString('ja-JP')}円`}}
+          },
+          scales:{
+            x:{ticks:{autoSkip:false,maxRotation:0,font:{size:11}},grid:{color:'rgba(128,128,128,0.06)'}},
+            y:{position:'left',title:{display:true,text:'手元現金',font:{size:11},color:'#185FA5'},ticks:{callback:v=>Math.round(v/10000)+'万',font:{size:10}},grid:{color:'rgba(128,128,128,0.08)'}},
+            y2:{position:'right',title:{display:true,text:'月次収入',font:{size:11},color:'#888'},ticks:{callback:v=>Math.round(v/10000)+'万',font:{size:10}},grid:{drawOnChartArea:false}}
+          }
+        }
+      });
+    }
+
+    buildInputs();
+    runAll();
+  </script>
+</body>
+</html>
